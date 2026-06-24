@@ -75,10 +75,15 @@ export default function AllCards() {
   const haptics = useHaptics()
 
   const cards = useAppStore((s) => s.scans)
+  const syncScans = useAppStore((s) => s.syncScans)
   const deleteScans = useAppStore((s) => s.deleteScans)
   const archiveScans = useAppStore((s) => s.archiveScans)
   const markExported = useAppStore((s) => s.markExported)
   const addToast = useAppStore((s) => s.addToast)
+
+  React.useEffect(() => {
+    syncScans()
+  }, [syncScans])
 
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
