@@ -18,15 +18,3 @@ db.on('error', (err) => {
   console.error('[DB] Unexpected error on idle client', err)
   process.exit(-1)
 })
-
-app.get("/", (req, res) => {
-  res.json({
-    ok: true,
-    service: "ScanFlow OCR API",
-    status: "running"
-  });
-});
-
-app.get("/health", (req, res) => {
-  res.json({ ok: true });
-});
