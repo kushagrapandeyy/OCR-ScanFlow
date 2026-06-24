@@ -17,8 +17,5 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
-  ],
-  "env": {
-    "VITE_API_URL": "@vite_api_url"
-  }
+  ]
 }
