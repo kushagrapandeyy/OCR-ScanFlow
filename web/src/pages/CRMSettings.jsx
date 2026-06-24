@@ -40,7 +40,7 @@ function Toggle({ checked, onChange }) {
 
 function SettingsSection({ icon, title, children }) {
   return (
-    <div className="settings-section" style={{ marginBottom: 16 }}>
+    <div className="settings-section">
       <div className="settings-section-header">
         <div style={{ color: 'var(--teal)' }}>{icon}</div>
         <span className="settings-section-title">{title}</span>
@@ -198,11 +198,13 @@ export default function CRMSettings() {
   ]
 
   return (
-    <div className="page-wrapper" style={{ maxWidth: 760 }}>
-      <div className="page-header">
+    <div className="page-wrapper">
+      <div className="page-header" style={{ marginBottom: 32 }}>
         <h1 className="page-title">CRM Settings</h1>
         <p className="page-subtitle">Configure your CRM integration, appearance, and preferences</p>
       </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px', alignItems: 'start' }}>
 
       {/* CRM Connection */}
       <SettingsSection icon={<Link size={15} />} title="CRM Integration">
@@ -453,6 +455,7 @@ export default function CRMSettings() {
           right={<ChevronRight size={16} style={{ color: 'var(--red)' }} />}
         />
       </SettingsSection>
+      </div>
 
       {/* Delete Account Modal */}
       <AnimatePresence>

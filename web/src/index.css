@@ -1294,7 +1294,6 @@ textarea.form-input {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  margin-bottom: 20px;
 }
 
 .settings-section-header {
