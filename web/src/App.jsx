@@ -14,6 +14,9 @@ const ScanCards = lazy(() => import('./pages/ScanCards'))
 const AllCards = lazy(() => import('./pages/AllCards'))
 const ExportPage = lazy(() => import('./pages/ExportPage'))
 const CRMSettings = lazy(() => import('./pages/CRMSettings'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
+const AuthCallback = lazy(() => import('./pages/AuthCallback'))
 
 function PageLoader() {
   return (
@@ -88,6 +91,7 @@ export default function App() {
           <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><SignUpPage /></PublicRoute>} />
+          <Route path="/auth/callback" element={<PublicRoute><AuthCallback /></PublicRoute>} />
 
           {/* Protected routes */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
@@ -96,6 +100,8 @@ export default function App() {
             <Route path="/cards" element={<AllCards />} />
             <Route path="/export" element={<ExportPage />} />
             <Route path="/settings" element={<CRMSettings />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
           </Route>
 
           {/* Fallback */}

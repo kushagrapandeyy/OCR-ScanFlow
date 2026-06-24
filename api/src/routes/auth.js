@@ -226,6 +226,27 @@ router.get('/me', requireAuth, async (req, res, next) => {
   }
 })
 
+/**
+ * PUT /api/auth/me
+ * Update personal details
+ */
+router.put('/me', requireAuth, async (req, res, next) => {
+  try {
+    const { name, company } = req.body
+    if (!name) return res.status(400).json({ error: 'Name is required' })
+
+    const result = await db.query(
+      'UPDATE users SET name = $1, company = $2, updated_at = NOW() WHERE id = $3 RETURNING id, name, email, company, avatar_url, auth_provider',
+      [name, company, req.user.id]
+    )
+    
+    if (!result.rows.length) return res.status(404).json({ error: 'User not found' })
+    res.json({ user: result.rows[0], message: 'Profile updated successfully' })
+  } catch (err) {
+    next(err)
+  }
+})
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function generateAccessToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET || 'access-secret', { expiresIn: '15m' })

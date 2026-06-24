@@ -20,6 +20,7 @@ import authRoutes from './routes/auth.js'
 import scanRoutes from './routes/scans.js'
 import exportRoutes from './routes/exports.js'
 import settingsRoutes from './routes/settings.js'
+import analyticsRoutes from './routes/analytics.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import AIJobQueue from './workers/AIJobQueue.js'
 
@@ -29,7 +30,20 @@ const PORT = process.env.PORT || 3001
 // ─── Security Middleware ──────────────────────────────────────────────────────
 app.use(helmet())
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      process.env.FRONTEND_URL?.replace(/\/$/, ''), // without trailing slash
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175'
+    ]
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(null, false)
+    }
+  },
   credentials: true,
 }))
 
@@ -53,6 +67,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/scans', scanRoutes)
 app.use('/api/exports', exportRoutes)
 app.use('/api/settings', settingsRoutes)
+app.use('/api/analytics', analyticsRoutes)
 
 // Health check
 app.get('/health', (_req, res) => {

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -11,6 +11,10 @@ import {
   ChevronRight,
   Zap,
   LogOut,
+  BarChart2,
+  User,
+  Menu,
+  PanelLeftClose,
 } from 'lucide-react'
 import { useAppStore } from '../../store'
 
@@ -19,7 +23,9 @@ const NAV_ITEMS = [
   { path: '/scan', label: 'Scan Cards', icon: ScanLine },
   { path: '/cards', label: 'All Cards', icon: CreditCard },
   { path: '/export', label: 'Export', icon: FileOutput },
+  { path: '/analytics', label: 'Analytics', icon: BarChart2 },
   { path: '/settings', label: 'CRM Settings', icon: Settings },
+  { path: '/profile', label: 'Profile', icon: User },
 ]
 
 const BOTTOM_TABS = [
@@ -51,6 +57,7 @@ export default function AppLayout() {
   const syncCrmConfig = useAppStore((s) => s.syncCrmConfig)
   const user = useAppStore((s) => s.user)
   const logout = useAppStore((s) => s.logout)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     syncScans()
@@ -72,11 +79,13 @@ export default function AppLayout() {
     '/scan': 'Scan Cards',
     '/cards': 'All Cards',
     '/export': 'Export',
+    '/analytics': 'Analytics',
     '/settings': 'CRM Settings',
+    '/profile': 'Profile',
   }[location.pathname] || 'ScanFlow'
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* ── Desktop Sidebar ── */}
       <aside className="sidebar">
         <div className="sidebar-logo">
@@ -87,6 +96,14 @@ export default function AppLayout() {
             <h2>ScanFlow</h2>
             <span>OCR · CRM Bridge</span>
           </div>
+          <button 
+            className="btn btn-ghost btn-icon" 
+            onClick={() => setSidebarCollapsed(true)} 
+            style={{ marginLeft: 'auto', padding: '4px' }}
+            title="Collapse Sidebar"
+          >
+            <PanelLeftClose size={18} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -145,6 +162,15 @@ export default function AppLayout() {
       <main className="main-content">
         {/* Mobile Header */}
         <header className="mobile-header">
+          {sidebarCollapsed && !isSubRoute && (
+            <button
+              className="btn btn-ghost btn-icon desktop-menu-btn"
+              onClick={() => setSidebarCollapsed(false)}
+              style={{ padding: '6px' }}
+            >
+              <Menu size={20} />
+            </button>
+          )}
           {isSubRoute ? (
             <button
               className="btn btn-ghost btn-icon"

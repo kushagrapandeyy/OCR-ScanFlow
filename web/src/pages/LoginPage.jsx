@@ -39,28 +39,15 @@ export default function LoginPage() {
       setError('Google Sign-In is not configured yet')
       return
     }
-    // Use Google's One Tap / popup sign-in
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: async (response) => {
-          setLoading(true)
-          setError('')
-          try {
-            await googleLogin(response.credential)
-            addToast({ type: 'success', title: 'Welcome!', message: 'Signed in with Google' })
-            navigate('/dashboard', { replace: true })
-          } catch (err) {
-            setError(err.message || 'Google sign-in failed')
-          } finally {
-            setLoading(false)
-          }
-        },
-      })
-      window.google.accounts.id.prompt()
-    } else {
-      setError('Google Sign-In SDK not loaded. Check your internet connection.')
-    }
+    
+    // Switch from popup to robust redirect flow
+    const redirectUri = `${window.location.origin}/auth/callback`
+    const nonce = Math.random().toString(36).substring(2)
+    localStorage.setItem('oauth_nonce', nonce)
+    
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=id_token&scope=email profile&nonce=${nonce}&prompt=select_account`
+    
+    window.location.href = url
   }
 
   return (

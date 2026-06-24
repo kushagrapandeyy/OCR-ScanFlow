@@ -277,6 +277,27 @@ export const useAppStore = create(
         return data
       },
 
+      // Update Profile
+      updateProfile: async (name, company) => {
+        const token = get().token || localStorage.getItem('token')
+        const res = await authFetch(token, `/api/auth/me`, {
+          method: 'PUT',
+          body: JSON.stringify({ name, company })
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Failed to update profile')
+        set({ user: data.user })
+        return data.user
+      },
+
+      // Fetch Analytics
+      fetchAnalytics: async () => {
+        const token = get().token || localStorage.getItem('token')
+        const res = await authFetch(token, `/api/analytics`)
+        if (!res.ok) throw new Error('Failed to fetch analytics')
+        return await res.json()
+      },
+
       // API Sync Actions
       syncCrmConfig: async () => {
         const token = get().token || localStorage.getItem('token')

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { ScanLine, Zap, Globe, Shield, ArrowRight, Sparkles, Layers, BarChart2 } from 'lucide-react'
 
 const fadeUp = {
@@ -39,14 +39,26 @@ const STEPS = [
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  
+  // Scroll animations setup
+  const { scrollY } = useScroll()
+  
+  // Parallax effects
+  const bgOrb1Y = useTransform(scrollY, [0, 1000], [0, 250])
+  const bgOrb2Y = useTransform(scrollY, [0, 1000], [0, -150])
+  const bgOrb3Y = useTransform(scrollY, [0, 1000], [0, 100])
+  
+  // Hero card parallax
+  const cardY = useTransform(scrollY, [0, 600], [0, -80])
+  const cardRotate = useTransform(scrollY, [0, 600], [-15, -5])
 
   return (
     <div className="landing-page">
-      {/* Animated background */}
+      {/* Animated background with Scroll Parallax */}
       <div className="landing-bg">
-        <div className="landing-bg-orb landing-bg-orb-1" />
-        <div className="landing-bg-orb landing-bg-orb-2" />
-        <div className="landing-bg-orb landing-bg-orb-3" />
+        <motion.div className="landing-bg-orb landing-bg-orb-1" style={{ y: bgOrb1Y }} />
+        <motion.div className="landing-bg-orb landing-bg-orb-2" style={{ y: bgOrb2Y }} />
+        <motion.div className="landing-bg-orb landing-bg-orb-3" style={{ y: bgOrb3Y }} />
         <div className="landing-bg-grid" />
       </div>
 
@@ -130,7 +142,8 @@ export default function LandingPage() {
         <motion.div
           className="landing-hero-visual"
           initial={{ opacity: 0, x: 60, rotateY: -15 }}
-          animate={{ opacity: 1, x: 0, rotateY: 0 }}
+          animate={{ opacity: 1, x: 0 }}
+          style={{ y: cardY, rotateY: cardRotate }}
           transition={{ delay: 0.4, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="landing-card-mockup">
@@ -147,7 +160,7 @@ export default function LandingPage() {
               <div className="landing-card-field"><span className="lcf-label">Email</span><span className="lcf-value lcf-teal">sarah@techflow.io</span></div>
               <div className="landing-card-field"><span className="lcf-label">Phone</span><span className="lcf-value">+1 (415) 555-0123</span></div>
               <div className="landing-card-conf">
-                <BarChart2 size={14} /> 
+                <BarChart2 size={14} />
                 <span>98% confidence</span>
                 <div className="landing-card-conf-bar"><div className="landing-card-conf-fill" /></div>
               </div>
@@ -179,7 +192,14 @@ export default function LandingPage() {
           viewport={{ once: true, margin: '-80px' }}
         >
           {FEATURES.map((f, i) => (
-            <motion.div key={f.title} className="landing-feature-card" variants={fadeUp} custom={i}>
+            <motion.div 
+              key={f.title} 
+              className="landing-feature-card" 
+              variants={fadeUp} 
+              custom={i}
+              whileHover={{ scale: 1.05, translateY: -5 }}
+              transition={{ duration: 0.3 }}
+            >
               <div className="landing-feature-icon" style={{ background: f.bg, color: f.color }}>
                 {f.icon}
               </div>
@@ -237,7 +257,7 @@ export default function LandingPage() {
           <div>
             <h3 className="landing-security-title">Enterprise-grade security</h3>
             <p className="landing-security-desc">
-              JWT authentication, bcrypt password hashing, rate-limited APIs, 
+              JWT authentication, bcrypt password hashing, rate-limited APIs,
               and your data never leaves your CRM pipeline.
             </p>
           </div>
@@ -258,7 +278,7 @@ export default function LandingPage() {
           <motion.p className="landing-section-sub" variants={fadeUp} custom={1}>
             Free to start. No credit card required.
           </motion.p>
-          <motion.div variants={fadeUp} custom={2}>
+          <motion.div variants={fadeUp} custom={2} style={{ marginTop: 32 }}>
             <motion.button
               className="btn btn-primary btn-lg landing-cta-primary"
               onClick={() => navigate('/signup')}
@@ -278,7 +298,7 @@ export default function LandingPage() {
             <div className="landing-logo-icon"><Zap size={16} /></div>
             <span className="landing-logo-text" style={{ fontSize: '0.875rem' }}>ScanFlow</span>
           </div>
-          <p className="landing-footer-copy">© 2024 ScanFlow. Powered by AI.</p>
+          <p className="landing-footer-copy">© 2026 ScanFlow. Powered by AI.</p>
         </div>
       </footer>
     </div>

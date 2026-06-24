@@ -17,10 +17,10 @@ router.post('/', async (req, res, next) => {
     }
 
     const result = await pool.query(`
-      INSERT INTO scans (client_id, batch_id, cloudinary_original_url, cloudinary_processed_url, status)
-      VALUES ($1, $2, $3, $4, 'uploaded')
+      INSERT INTO scans (user_id, client_id, batch_id, cloudinary_original_url, cloudinary_processed_url, status)
+      VALUES ($1, $2, $3, $4, $5, 'uploaded')
       RETURNING id, status, ai_status
-    `, [client_id, batch_id, cloudinary_original_url, cloudinary_processed_url]);
+    `, [req.user.id, client_id, batch_id, cloudinary_original_url, cloudinary_processed_url]);
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -33,10 +33,10 @@ router.post('/:scanId/extract', async (req, res, next) => {
   try {
     const { scanId } = req.params;
 
-    // Check if scan exists
-    const scanRes = await pool.query('SELECT * FROM scans WHERE id = $1', [scanId]);
+    // Check if scan exists and belongs to user
+    const scanRes = await pool.query('SELECT * FROM scans WHERE id = $1 AND user_id = $2', [scanId, req.user.id]);
     if (scanRes.rows.length === 0) {
-      return res.status(404).json({ error: 'Scan not found' });
+      return res.status(404).json({ error: 'Scan not found or unauthorized' });
     }
     const scan = scanRes.rows[0];
 
@@ -46,7 +46,7 @@ router.post('/:scanId/extract', async (req, res, next) => {
     }
 
     // Check for active job
-    const jobRes = await pool.query(`SELECT * FROM ai_jobs WHERE scan_id = $1`, [scanId]);
+    const jobRes = await pool.query(`SELECT * FROM ai_jobs WHERE scan_id = $1 AND user_id = $2`, [scanId, req.user.id]);
     if (jobRes.rows.length > 0) {
       const job = jobRes.rows[0];
       if (['pending', 'processing', 'queued_due_to_rate_limit'].includes(job.status)) {
@@ -57,20 +57,21 @@ router.post('/:scanId/extract', async (req, res, next) => {
     // Create new job
     await pool.query('BEGIN');
     await pool.query(`
-      INSERT INTO ai_jobs (scan_id, client_id) 
-      VALUES ($1, $2)
+      INSERT INTO ai_jobs (scan_id, user_id, client_id) 
+      VALUES ($1, $2, $3)
       ON CONFLICT (scan_id) DO UPDATE SET 
         status = 'pending', attempt_count = 0, next_attempt_at = NOW(), updated_at = NOW()
-    `, [scanId, scan.client_id]);
+    `, [scanId, req.user.id, scan.client_id]);
 
     await pool.query(`
       UPDATE scans SET status = 'extraction_pending', ai_status = 'pending', updated_at = NOW() 
-      WHERE id = $1
-    `, [scanId]);
+      WHERE id = $1 AND user_id = $2
+    `, [scanId, req.user.id]);
     await pool.query('COMMIT');
 
     res.json({ scan_id: scanId, ai_status: 'pending', message: 'Extraction queued' });
   } catch (err) {
+    await pool.query('ROLLBACK');
     next(err);
   }
 });
@@ -79,9 +80,9 @@ router.post('/:scanId/extract', async (req, res, next) => {
 router.get('/:scanId/extraction-status', async (req, res, next) => {
   try {
     const { scanId } = req.params;
-    const scanRes = await pool.query('SELECT status, ai_status FROM scans WHERE id = $1', [scanId]);
+    const scanRes = await pool.query('SELECT status, ai_status FROM scans WHERE id = $1 AND user_id = $2', [scanId, req.user.id]);
     if (scanRes.rows.length === 0) {
-      return res.status(404).json({ error: 'Scan not found' });
+      return res.status(404).json({ error: 'Scan not found or unauthorized' });
     }
     
     res.json(scanRes.rows[0]);
@@ -94,7 +95,7 @@ router.get('/:scanId/extraction-status', async (req, res, next) => {
 router.get('/:scanId/contact', async (req, res, next) => {
   try {
     const { scanId } = req.params;
-    const contactRes = await pool.query('SELECT * FROM extracted_contacts WHERE scan_id = $1', [scanId]);
+    const contactRes = await pool.query('SELECT * FROM extracted_contacts WHERE scan_id = $1 AND user_id = $2', [scanId, req.user.id]);
     
     if (contactRes.rows.length === 0) {
       return res.status(404).json({ error: 'Extracted contact not found' });
@@ -111,31 +112,32 @@ router.post('/:scanId/retry-extraction', async (req, res, next) => {
   try {
     const { scanId } = req.params;
     
-    const scanRes = await pool.query('SELECT * FROM scans WHERE id = $1', [scanId]);
-    if (scanRes.rows.length === 0) return res.status(404).json({ error: 'Scan not found' });
+    const scanRes = await pool.query('SELECT * FROM scans WHERE id = $1 AND user_id = $2', [scanId, req.user.id]);
+    if (scanRes.rows.length === 0) return res.status(404).json({ error: 'Scan not found or unauthorized' });
 
     // Force retry by inserting/updating job
     await pool.query('BEGIN');
     await pool.query(`
-      INSERT INTO ai_jobs (scan_id, client_id) 
-      VALUES ($1, $2)
+      INSERT INTO ai_jobs (scan_id, user_id, client_id) 
+      VALUES ($1, $2, $3)
       ON CONFLICT (scan_id) DO UPDATE SET 
         status = 'pending', attempt_count = 0, next_attempt_at = NOW(), updated_at = NOW()
-    `, [scanId, scanRes.rows[0].client_id]);
+    `, [scanId, req.user.id, scanRes.rows[0].client_id]);
 
     await pool.query(`
       UPDATE scans SET status = 'extraction_pending', ai_status = 'pending', updated_at = NOW() 
-      WHERE id = $1
-    `, [scanId]);
+      WHERE id = $1 AND user_id = $2
+    `, [scanId, req.user.id]);
     await pool.query('COMMIT');
 
     res.json({ scan_id: scanId, message: 'Extraction retry queued' });
   } catch (err) {
+    await pool.query('ROLLBACK');
     next(err);
   }
 });
 
-// 6. Get all scans with their extracted contacts
+// 6. Get all scans with their extracted contacts (For logged-in user only)
 router.get('/', async (req, res, next) => {
   try {
     const result = await pool.query(`
@@ -147,8 +149,9 @@ router.get('/', async (req, res, next) => {
         c.category, c.country, c.mobile_prefix
       FROM scans s
       LEFT JOIN extracted_contacts c ON s.id = c.scan_id
+      WHERE s.user_id = $1
       ORDER BY s.created_at DESC
-    `);
+    `, [req.user.id]);
     
     // Map backend rows to match frontend 'card' object structure for seamless transition
     const cards = result.rows.map(row => ({
@@ -168,6 +171,10 @@ router.put('/:scanId/contact', async (req, res, next) => {
   try {
     const { scanId } = req.params;
     const body = req.body;
+
+    // Verify ownership
+    const scanRes = await pool.query('SELECT id FROM scans WHERE id = $1 AND user_id = $2', [scanId, req.user.id]);
+    if (scanRes.rows.length === 0) return res.status(404).json({ error: 'Scan not found or unauthorized' });
     
     const updateResult = await pool.query(`
       UPDATE extracted_contacts 
@@ -188,28 +195,28 @@ router.put('/:scanId/contact', async (req, res, next) => {
         country = COALESCE($14, country),
         mobile_prefix = COALESCE($15, mobile_prefix),
         updated_at = NOW()
-      WHERE scan_id = $16
+      WHERE scan_id = $16 AND user_id = $17
       RETURNING *
     `, [
       body.first_name, body.last_name, body.title, body.company,
       body.email, body.phone, body.website, body.linkedin,
       body.address, body.notes, body.interaction_level, body.event_name,
-      body.category, body.country, body.mobile_prefix, scanId
+      body.category, body.country, body.mobile_prefix, scanId, req.user.id
     ]);
 
     if (updateResult.rowCount === 0) {
       // If contact doesn't exist, create it (in case it was manual review)
       await pool.query(`
         INSERT INTO extracted_contacts (
-          scan_id, first_name, last_name, designation, company, email, phone, website, linkedin, address, notes, interaction_level, event_name, category, country, mobile_prefix
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+          scan_id, user_id, first_name, last_name, designation, company, email, phone, website, linkedin, address, notes, interaction_level, event_name, category, country, mobile_prefix
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       `, [
-        scanId, body.first_name, body.last_name, body.title, body.company, body.email, body.phone, body.website, body.linkedin, body.address, body.notes, body.interaction_level, body.event_name, body.category, body.country, body.mobile_prefix
+        scanId, req.user.id, body.first_name, body.last_name, body.title, body.company, body.email, body.phone, body.website, body.linkedin, body.address, body.notes, body.interaction_level, body.event_name, body.category, body.country, body.mobile_prefix
       ]);
     }
     
     // Mark scan status as completed (if it was manual review)
-    await pool.query("UPDATE scans SET status = 'extraction_completed', review_status = 'approved' WHERE id = $1", [scanId]);
+    await pool.query("UPDATE scans SET status = 'extraction_completed', review_status = 'approved' WHERE id = $1 AND user_id = $2", [scanId, req.user.id]);
 
     res.json({ success: true });
   } catch (err) {
@@ -221,7 +228,8 @@ router.put('/:scanId/contact', async (req, res, next) => {
 router.delete('/:scanId', async (req, res, next) => {
   try {
     const { scanId } = req.params;
-    await pool.query('DELETE FROM scans WHERE id = $1', [scanId]);
+    const delRes = await pool.query('DELETE FROM scans WHERE id = $1 AND user_id = $2', [scanId, req.user.id]);
+    if (delRes.rowCount === 0) return res.status(404).json({ error: 'Scan not found or unauthorized' });
     res.json({ success: true });
   } catch (err) {
     next(err);
@@ -234,12 +242,11 @@ router.post('/export', async (req, res, next) => {
     const { scanIds } = req.body;
     if (!scanIds || !scanIds.length) return res.status(400).json({ error: 'No scan IDs provided' });
     
-    // We update exported_at to NOW()
     await pool.query(`
       UPDATE scans 
       SET exported_at = NOW() 
-      WHERE id = ANY($1::uuid[])
-    `, [scanIds]);
+      WHERE id = ANY($1::uuid[]) AND user_id = $2
+    `, [scanIds, req.user.id]);
     
     res.json({ success: true });
   } catch (err) {
@@ -255,8 +262,25 @@ router.post('/archive', async (req, res, next) => {
     await pool.query(`
       UPDATE scans 
       SET archived = true 
-      WHERE id = ANY($1::uuid[])
-    `, [scanIds]);
+      WHERE id = ANY($1::uuid[]) AND user_id = $2
+    `, [scanIds, req.user.id]);
+    
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 10. Delete batch
+router.post('/delete-batch', async (req, res, next) => {
+  try {
+    const { scanIds } = req.body;
+    if (!scanIds || !scanIds.length) return res.status(400).json({ error: 'No scan IDs provided' });
+    
+    await pool.query(`
+      DELETE FROM scans 
+      WHERE id = ANY($1::uuid[]) AND user_id = $2
+    `, [scanIds, req.user.id]);
     
     res.json({ success: true });
   } catch (err) {
