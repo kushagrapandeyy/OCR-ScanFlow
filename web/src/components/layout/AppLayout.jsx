@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
@@ -14,7 +14,6 @@ import {
   LogOut,
   BarChart2,
   User,
-  Menu,
 } from 'lucide-react'
 import { useAppStore } from '../../store'
 
@@ -45,13 +44,13 @@ const pageVariants = {
 const pageTransition = { type: 'tween', ease: [0.4, 0, 0.2, 1], duration: 0.18 }
 
 export default function AppLayout() {
-  const location   = useLocation()
-  const navigate   = useNavigate()
-  const crmConfig  = useAppStore((s) => s.crmConfig)
-  const syncScans  = useAppStore((s) => s.syncScans)
+  const location      = useLocation()
+  const navigate      = useNavigate()
+  const crmConfig     = useAppStore((s) => s.crmConfig)
+  const syncScans     = useAppStore((s) => s.syncScans)
   const syncCrmConfig = useAppStore((s) => s.syncCrmConfig)
-  const user       = useAppStore((s) => s.user)
-  const logout     = useAppStore((s) => s.logout)
+  const user          = useAppStore((s) => s.user)
+  const logout        = useAppStore((s) => s.logout)
   const [isRail, setIsRail] = useState(false)
 
   useEffect(() => {
@@ -78,21 +77,27 @@ export default function AppLayout() {
     '/profile':   'Profile',
   }[location.pathname] || 'ScanFlow'
 
+  const userInitials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : '?'
+
   return (
     <div className="app-shell">
 
       {/* ── Sidebar ── */}
       <aside className={`sidebar ${isRail ? 'sidebar-rail' : ''}`}>
 
-        {/* Logo */}
+        {/* Logo — links to landing page */}
         <div className="sidebar-logo">
-          <div className="logo-icon"><Zap size={17} /></div>
-          <div className="sidebar-logo-text">
-            <div className="logo-text">
-              <h2>ScanFlow</h2>
-              <span>OCR · CRM Bridge</span>
+          <Link to="/" className="sidebar-logo-link" title="Back to home">
+            <div className="logo-icon"><Zap size={17} /></div>
+            <div className="sidebar-logo-text">
+              <div className="logo-text">
+                <h2>ScanFlow</h2>
+                <span>OCR · CRM Bridge</span>
+              </div>
             </div>
-          </div>
+          </Link>
           <button
             className="sidebar-toggle-btn"
             onClick={() => setIsRail(!isRail)}
@@ -104,6 +109,10 @@ export default function AppLayout() {
 
         {/* Nav */}
         <nav className="sidebar-nav">
+          {/* Section label */}
+          {!isRail && (
+            <div className="sidebar-section-label">Navigation</div>
+          )}
           {NAV_ITEMS.map(({ path, label, icon: Icon }) => (
             <NavLink
               key={path}
@@ -130,40 +139,56 @@ export default function AppLayout() {
 
         {/* Footer */}
         <div className="sidebar-footer">
-          {/* User info */}
+          {/* User info — full */}
           {user && !isRail && (
-            <div className="sidebar-user">
+            <NavLink to="/profile" className="sidebar-user-btn">
               <div className="sidebar-user-avatar">
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.name} />
-                ) : (
-                  <span>{user.name?.[0]?.toUpperCase() || '?'}</span>
-                )}
+                {user.avatar_url
+                  ? <img src={user.avatar_url} alt={user.name} />
+                  : <span>{userInitials}</span>
+                }
               </div>
               <div className="sidebar-user-info">
                 <div className="sidebar-user-name">{user.name}</div>
                 <div className="sidebar-user-email">{user.email}</div>
               </div>
-              <button className="sidebar-logout-btn" onClick={handleLogout} title="Sign out">
+              <button
+                className="sidebar-logout-btn"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLogout() }}
+                title="Sign out"
+              >
+                <LogOut size={14} />
+              </button>
+            </NavLink>
+          )}
+
+          {/* Rail: avatar icon → profile + logout */}
+          {user && isRail && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <NavLink to="/profile" title="Profile" className="sidebar-rail-avatar">
+                {user.avatar_url
+                  ? <img src={user.avatar_url} alt={user.name} />
+                  : <span>{userInitials}</span>
+                }
+              </NavLink>
+              <button
+                className="sidebar-toggle-btn"
+                onClick={handleLogout}
+                title="Sign out"
+                style={{ color: 'rgba(255,255,255,0.3)' }}
+              >
                 <LogOut size={14} />
               </button>
             </div>
           )}
 
-          {/* Rail: just logout icon */}
-          {user && isRail && (
-            <button className="sidebar-toggle-btn" onClick={handleLogout} title="Sign out" style={{ color: 'var(--text-muted)' }}>
-              <LogOut size={15} />
-            </button>
-          )}
-
           {/* CRM status */}
           {!isRail && (
-            <div className="crm-status" style={{ marginTop: 8 }}>
+            <div className="crm-status">
               <div className="crm-status-label">CRM Status</div>
               <div className="crm-status-value">
-                <div className={`crm-dot ${crmConfig.connected ? '' : 'disconnected'}`} />
-                {crmConfig.name || 'Not Connected'}
+                <div className={`crm-dot ${crmConfig?.connected ? '' : 'disconnected'}`} />
+                {crmConfig?.name || 'Not Connected'}
               </div>
             </div>
           )}
@@ -180,21 +205,28 @@ export default function AppLayout() {
               <ArrowLeft size={20} />
             </button>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}>
               <div className="logo-icon" style={{ width: 30, height: 30 }}>
                 <Zap size={15} />
               </div>
               <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em' }}>
                 ScanFlow
               </span>
-            </div>
+            </Link>
           )}
           <span style={{ flex: 1, textAlign: 'center', fontWeight: 600, fontSize: '0.875rem', fontFamily: "'DM Sans', sans-serif" }}>
             {pageTitle}
           </span>
-          <button className="btn btn-ghost btn-icon" onClick={handleLogout} style={{ padding: '6px' }} title="Sign out">
-            <LogOut size={18} />
-          </button>
+          {user && (
+            <NavLink to="/profile" style={{ display: 'flex', alignItems: 'center' }}>
+              <div className="mobile-user-avatar">
+                {user.avatar_url
+                  ? <img src={user.avatar_url} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent)' }}>{userInitials}</span>
+                }
+              </div>
+            </NavLink>
+          )}
         </header>
 
         {/* Page Content */}
@@ -206,7 +238,7 @@ export default function AppLayout() {
             animate="animate"
             exit="exit"
             transition={pageTransition}
-            style={{ flex: 1 }}
+            style={{ flex: 1, width: '100%' }}
           >
             <Outlet />
           </motion.div>

@@ -258,12 +258,13 @@ a:hover { color: var(--teal-dim); }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 0;
   cursor: pointer;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--text-muted);
+  /* Brighter base color so text is readable against dark sidebar */
+  color: rgba(255,255,255,0.45);
   background: transparent;
   border: none;
   width: 100%;
@@ -290,13 +291,13 @@ a:hover { color: var(--teal-dim); }
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,0.04);
-  color: var(--text-secondary);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.80);
 }
 
 .nav-item.active {
-  background: rgba(255,255,255,0.05);
-  color: var(--text-primary);
+  background: rgba(255,255,255,0.07);
+  color: #fff;
   border: none;
 }
 
@@ -339,9 +340,12 @@ a:hover { color: var(--teal-dim); }
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.35);
   transition: color var(--duration-fast);
 }
+
+.nav-item:hover .nav-icon { color: rgba(255,255,255,0.7); }
+.nav-item.active .nav-icon { color: var(--accent); }
 
 /* Rail tooltip */
 .sidebar-rail .nav-item:hover::after {
@@ -453,6 +457,8 @@ a:hover { color: var(--teal-dim); }
   min-height: 100vh;
   overflow-x: hidden;
   transition: margin-left var(--duration-normal) var(--ease-smooth);
+  /* Center content in the remaining space */
+  align-items: center;
 }
 
 .main-content.rail-mode {
@@ -464,6 +470,8 @@ a:hover { color: var(--teal-dim); }
   padding: 36px 48px;
   max-width: 1280px;
   width: 100%;
+  /* This ensures content is always centered in available space */
+  align-self: stretch;
 }
 
 /* --- Mobile Header --- */

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { ScanLine, Zap, Globe, Shield, ArrowRight, Sparkles, Layers, BarChart2 } from 'lucide-react'
+import { ScanLine, Zap, Globe, Shield, ArrowRight, Sparkles, Layers, BarChart2, LayoutDashboard } from 'lucide-react'
+import { useAppStore } from '../store'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -39,6 +40,7 @@ const STEPS = [
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const user = useAppStore(s => s.user)
   
   // Scroll animations setup
   const { scrollY } = useScroll()
@@ -75,10 +77,22 @@ export default function LandingPage() {
             <span className="landing-logo-text">ScanFlow</span>
           </div>
           <div className="landing-nav-actions">
-            <button className="btn btn-ghost" onClick={() => navigate('/login')}>Sign In</button>
-            <button className="btn btn-primary btn-sm" onClick={() => navigate('/signup')}>
-              Get Started <ArrowRight size={14} />
-            </button>
+            {user ? (
+              <div className="landing-user-chip" onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'var(--bg-elevated)', padding: '6px 14px 6px 6px', borderRadius: 'var(--radius-full)', border: '1px solid var(--border)', transition: 'all 0.2s' }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-glow)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, overflow: 'hidden' }}>
+                  {user.avatar_url ? <img src={user.avatar_url} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user.name?.[0] || 'U')}
+                </div>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>Go to Dashboard</span>
+                <LayoutDashboard size={14} style={{ color: 'var(--text-muted)' }} />
+              </div>
+            ) : (
+              <>
+                <button className="btn btn-ghost" onClick={() => navigate('/login')}>Sign In</button>
+                <button className="btn btn-primary btn-sm" onClick={() => navigate('/signup')}>
+                  Get Started <ArrowRight size={14} />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </motion.nav>
