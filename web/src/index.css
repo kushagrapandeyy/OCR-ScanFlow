@@ -94,6 +94,40 @@
   --safe-right:  env(safe-area-inset-right, 0px);
 }
 
+[data-theme="light"] {
+  /* Background Layers — Light scale */
+  --bg-base:     #F4F4F5;
+  --bg-surface:  #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-card:     #FFFFFF;
+  --bg-hover:    #F4F4F5;
+  --bg-input:    #FFFFFF;
+
+  /* Text */
+  --text-primary:   #09090B;
+  --text-secondary: #52525B;
+  --text-muted:     #71717A;
+
+  /* Borders */
+  --border:        rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+  --border-inset:  rgba(0, 0, 0, 0.05);
+
+  /* Shadows */
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:   0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg:   0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+
+  /* Sidebar */
+  --sidebar-bg:         #FFFFFF;
+  --sidebar-border:     rgba(0,0,0,0.08);
+
+  /* Accents */
+  --accent-glow: rgba(20, 184, 166, 0.1);
+  --teal-glow:   rgba(20, 184, 166, 0.1);
+}
+
+
 /* --- Reset & Base --- */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -218,8 +252,8 @@ a:hover { color: var(--teal-dim); }
 }
 
 .logo-icon {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   background: linear-gradient(135deg, var(--accent-glow), transparent);
   border: 1px solid var(--accent-border);
   border-radius: var(--radius-md);
@@ -231,78 +265,65 @@ a:hover { color: var(--teal-dim); }
 }
 
 .logo-text h2 {
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   font-family: 'DM Sans', sans-serif;
+  line-height: 1.1;
 }
 
 .logo-text span {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 500;
   color: var(--text-muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 8px 0;
+  padding: 16px 12px;
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 /* Rail nav item */
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  border-radius: 0;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 0.8125rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  /* Brighter base color so text is readable against dark sidebar */
-  color: rgba(255,255,255,0.45);
+  color: var(--text-secondary);
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   width: 100%;
   text-align: left;
-  transition: color var(--duration-fast) var(--ease-smooth),
-              background var(--duration-fast) var(--ease-smooth);
+  transition: all var(--duration-fast) var(--ease-smooth);
   position: relative;
   text-decoration: none;
   white-space: nowrap;
-  letter-spacing: 0.005em;
-}
-
-.nav-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 4px;
-  bottom: 4px;
-  width: 2.5px;
-  border-radius: 0 2px 2px 0;
-  background: var(--accent);
-  opacity: 0;
-  transition: opacity var(--duration-fast);
+  letter-spacing: 0.01em;
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.80);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .nav-item.active {
-  background: rgba(255,255,255,0.07);
-  color: #fff;
-  border: none;
-}
-
-.nav-item.active::before {
-  opacity: 1;
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
 
 .nav-item.active .nav-icon {
@@ -319,6 +340,7 @@ a:hover { color: var(--teal-dim); }
   justify-content: center;
   padding: 10px 0;
   gap: 0;
+  border-radius: var(--radius-md);
 }
 
 .sidebar-rail .nav-item-label {
@@ -337,14 +359,14 @@ a:hover { color: var(--teal-dim); }
 }
 
 .nav-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
-  color: rgba(255,255,255,0.35);
+  color: var(--text-muted);
   transition: color var(--duration-fast);
 }
 
-.nav-item:hover .nav-icon { color: rgba(255,255,255,0.7); }
+.nav-item:hover .nav-icon { color: var(--text-primary); }
 .nav-item.active .nav-icon { color: var(--accent); }
 
 /* Rail tooltip */

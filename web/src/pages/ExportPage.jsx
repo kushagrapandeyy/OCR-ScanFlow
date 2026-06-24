@@ -21,8 +21,6 @@ import {
 import { useAppStore } from '../store'
 import { useHaptics } from '../hooks/useHaptics'
 import { format } from 'date-fns'
-import * as XLSX from 'xlsx'
-import Papa from 'papaparse'
 
 const FORMATS = [
   { id: 'json', label: 'JSON', desc: 'Webhook / API ready', icon: <FileJson size={24} />, color: 'var(--orange)', bg: 'var(--orange-dim)' },
@@ -53,23 +51,40 @@ function mapCardToCRM(c) {
   }
 }
 
-function exportToJSON(cards) {
-  const data = JSON.stringify(cards.map(mapCardToCRM), null, 2)
-  downloadFile(data, 'cardscan-export.json', 'application/json')
-}
+async function exportFromBackend(cards, format) {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+  const response = await fetch(`${apiUrl}/api/exports/generate`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json', 
+      'Authorization': `Bearer ${localStorage.getItem('token')}` 
+    },
+    body: JSON.stringify({ cards: cards.map(mapCardToCRM), format }),
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || `Export failed: ${response.status}`)
+  }
+  
+  // Create a blob URL and force download
+  const blob = await response.blob()
+  const contentDisposition = response.headers.get('Content-Disposition')
+  let filename = `cardscan-export.${format}`
+  
+  if (contentDisposition && contentDisposition.includes('filename=')) {
+    const match = contentDisposition.match(/filename="?([^"]+)"?/)
+    if (match && match[1]) {
+      filename = match[1]
+    }
+  }
 
-function exportToCSV(cards) {
-  const data = Papa.unparse(cards.map(mapCardToCRM))
-  downloadFile(data, 'cardscan-export.csv', 'text/csv')
-}
-
-function exportToXLSX(cards) {
-  const rows = cards.map(mapCardToCRM)
-  const ws = XLSX.utils.json_to_sheet(rows)
-  ws['!cols'] = Object.keys(rows[0] || {}).map(() => ({ wch: 20 }))
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'CRM Contacts')
-  XLSX.writeFile(wb, 'cardscan-export.xlsx')
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 async function exportToEC2(cards) {
@@ -82,15 +97,7 @@ async function exportToEC2(cards) {
   if (!response.ok) throw new Error(`EC2 Sync failed: ${response.status}`)
 }
 
-function downloadFile(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
+// Removed downloadFile utility since it's handled in exportFromBackend
 
 export default function ExportPage() {
   const location = useLocation()
@@ -161,10 +168,11 @@ export default function ExportPage() {
     const cardsToExport = cards.filter(c => selectedIds.has(c.id))
 
     try {
-      if (formatType === 'json') exportToJSON(cardsToExport)
-      else if (formatType === 'csv') exportToCSV(cardsToExport)
-      else if (formatType === 'xlsx') exportToXLSX(cardsToExport)
-      else if (formatType === 'sftp') await exportToEC2(cardsToExport)
+      if (formatType === 'sftp') {
+        await exportToEC2(cardsToExport)
+      } else {
+        await exportFromBackend(cardsToExport, formatType)
+      }
 
       markExported(Array.from(selectedIds))
       haptics.success()

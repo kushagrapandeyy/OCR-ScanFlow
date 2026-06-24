@@ -58,6 +58,21 @@ export default function AppLayout() {
     syncCrmConfig()
   }, [syncScans, syncCrmConfig])
 
+  // Theme Sync
+  const darkMode = useAppStore((s) => s.darkMode)
+  useEffect(() => {
+    const root = document.documentElement
+    if (darkMode === 'dark') {
+      root.dataset.theme = 'dark'
+    } else if (darkMode === 'light') {
+      root.dataset.theme = 'light'
+    } else {
+      // Auto: read OS preference
+      const isOsDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      root.dataset.theme = isOsDark ? 'dark' : 'light'
+    }
+  }, [darkMode])
+
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })

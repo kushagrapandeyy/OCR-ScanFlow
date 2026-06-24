@@ -206,7 +206,7 @@ export default function CRMSettings() {
 
       {/* CRM Connection */}
       <SettingsSection icon={<Link size={15} />} title="CRM Integration">
-        <div style={{ padding: 16 }}>
+        <div style={{ padding: '20px' }}>
           <div className="form-group">
             <div className="form-label">Integration Name</div>
             <input className="form-input" value={localCrm.name} onChange={setL('name')} placeholder="My CRM" />
@@ -259,7 +259,7 @@ export default function CRMSettings() {
           }
         />
         {localCrm.sftpEnabled && (
-          <div style={{ padding: 16, borderTop: '1px solid var(--border)' }}>
+          <div style={{ padding: '20px', borderTop: '1px solid var(--border)' }}>
             <div
               style={{
                 background: 'var(--teal-glow)',
@@ -305,7 +305,7 @@ export default function CRMSettings() {
 
       {/* Schema Mapping */}
       <SettingsSection icon={<Database size={15} />} title="CRM Schema Mapping">
-        <div style={{ padding: 16 }}>
+        <div style={{ padding: '20px' }}>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 14 }}>
             Map CardScan fields to your CRM's field names. Leave blank to use defaults.
           </p>
@@ -332,7 +332,7 @@ export default function CRMSettings() {
 
       {/* Appearance */}
       <SettingsSection icon={<Moon size={15} />} title="Appearance">
-        <div style={{ padding: 16 }}>
+        <div style={{ padding: '20px' }}>
           <div className="form-label" style={{ marginBottom: 10 }}>Color Mode</div>
           <div style={{ display: 'flex', gap: 10 }}>
             {DARK_OPTIONS.map(({ value, label, icon }) => (
@@ -394,7 +394,7 @@ export default function CRMSettings() {
           }
         />
         {hapticsSettings.enabled && (
-          <div style={{ padding: 16, borderTop: '1px solid var(--border)' }}>
+          <div style={{ padding: '20px', borderTop: '1px solid var(--border)' }}>
             <div className="form-label" style={{ marginBottom: 10 }}>Test Feedback</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {[
@@ -418,7 +418,7 @@ export default function CRMSettings() {
 
       {/* Backend Architecture Note */}
       <SettingsSection icon={<Code size={15} />} title="Deployment Architecture">
-        <div style={{ padding: 16 }}>
+        <div style={{ padding: '20px' }}>
           <div
             style={{
               background: 'var(--bg-elevated)',
