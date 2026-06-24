@@ -24,6 +24,7 @@ import { errorHandler } from './middleware/errorHandler.js'
 import AIJobQueue from './workers/AIJobQueue.js'
 
 const app = express()
+app.set('trust proxy', 1)
 const PORT = process.env.PORT || 3001
 
 // ─── Security Middleware ──────────────────────────────────────────────────────
