@@ -104,21 +104,24 @@ export default function AppLayout() {
 
         {/* Logo — links to landing page */}
         <div className="sidebar-logo">
-          <Link to="/" className="sidebar-logo-link" title="Back to home">
-            <div className="logo-icon"><Zap size={17} /></div>
-            <div className="sidebar-logo-text">
-              <div className="logo-text">
-                <h2>ScanFlow</h2>
-                <span>OCR · CRM Bridge</span>
+          {!isRail && (
+            <Link to="/" className="sidebar-logo-link" title="Back to home">
+              <div className="logo-icon"><Zap size={17} /></div>
+              <div className="sidebar-logo-text">
+                <div className="logo-text">
+                  <h2>ScanFlow</h2>
+                  <span>OCR · CRM Bridge</span>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          )}
           <button
             className="sidebar-toggle-btn"
             onClick={() => setIsRail(!isRail)}
             title={isRail ? 'Expand sidebar' : 'Collapse sidebar'}
+            style={isRail ? { width: '100%', height: '32px', margin: 0, justifyContent: 'center' } : {}}
           >
-            {isRail ? <PanelLeft size={15} /> : <PanelLeftClose size={15} />}
+            {isRail ? <PanelLeft size={18} /> : <PanelLeftClose size={15} />}
           </button>
         </div>
 
@@ -179,8 +182,8 @@ export default function AppLayout() {
 
           {/* Rail: avatar icon → profile + logout */}
           {user && isRail && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <NavLink to="/profile" title="Profile" className="sidebar-rail-avatar">
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <NavLink to="/profile" title="Profile" className="sidebar-user-avatar" style={{ flexShrink: 0 }}>
                 {user.avatar_url
                   ? <img src={user.avatar_url} alt={user.name} />
                   : <span>{userInitials}</span>

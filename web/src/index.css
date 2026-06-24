@@ -227,10 +227,18 @@ a:hover { color: var(--teal-dim); }
   border-bottom: 1px solid var(--sidebar-border);
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
   flex-shrink: 0;
   overflow: hidden;
   min-height: 62px;
+}
+
+.sidebar-logo-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  overflow: hidden;
 }
 
 .sidebar-logo-text {
@@ -249,6 +257,10 @@ a:hover { color: var(--teal-dim); }
 .sidebar-rail .sidebar-logo {
   justify-content: center;
   padding: 18px 0 14px;
+}
+
+.sidebar-rail .sidebar-logo-link {
+  gap: 0;
 }
 
 .logo-icon {

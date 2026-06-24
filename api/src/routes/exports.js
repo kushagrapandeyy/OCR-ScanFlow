@@ -50,8 +50,6 @@ router.post('/sftp', requireAuth, async (req, res, next) => {
   }
 })
 
-})
-
 /**
  * POST /api/exports/generate
  * Formats cards into JSON, CSV, or XLSX and returns the file buffer.
