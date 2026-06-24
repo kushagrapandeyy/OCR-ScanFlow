@@ -312,7 +312,10 @@ export default function LandingPage() {
             <div className="landing-logo-icon"><Zap size={16} /></div>
             <span className="landing-logo-text" style={{ fontSize: '0.875rem' }}>ScanFlow</span>
           </div>
-          <p className="landing-footer-copy">© 2026 ScanFlow. Powered by AI.</p>
+          <p className="landing-footer-copy">
+            © 2026 ScanFlow. Powered by AI.<br />
+            Built by Firmlytic Solutions Pvt. Ltd.
+          </p>
         </div>
       </footer>
     </div>
