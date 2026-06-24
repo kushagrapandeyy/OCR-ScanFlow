@@ -2005,6 +2005,7 @@ textarea.form-input {
   gap: 10px;
   text-decoration: none;
   color: var(--text-primary);
+  flex-shrink: 0;
 }
 
 .landing-logo-icon {
@@ -2022,6 +2023,7 @@ textarea.form-input {
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
   font-size: 1.2rem;
+  white-space: nowrap;
 }
 
 .landing-nav-actions {
@@ -2041,6 +2043,13 @@ textarea.form-input {
   transition: color 0.2s;
 }
 .btn-ghost:hover { color: var(--text-primary); }
+
+.landing-nav .btn-ghost {
+  color: rgba(255, 255, 255, 0.75);
+}
+.landing-nav .btn-ghost:hover {
+  color: #fff;
+}
 
 /* Hero */
 .landing-hero {
@@ -2376,12 +2385,23 @@ textarea.form-input {
     grid-template-columns: 1fr;
     padding-top: 100px;
     gap: 40px;
+    text-align: center;
+  }
+  .landing-hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .landing-h1 { font-size: 2.6rem; }
   .landing-features-grid { grid-template-columns: 1fr; }
   .landing-steps { grid-template-columns: 1fr; }
-  .landing-hero-visual { display: none; }
-  .landing-stats-row { gap: 20px; }
+  .landing-hero-visual { 
+    transform: scale(0.85); 
+    margin: 0 auto; 
+    transform-origin: center;
+  }
+  .landing-cta-row { justify-content: center; }
+  .landing-stats-row { justify-content: center; gap: 20px; }
   .landing-stat-value { font-size: 1.4rem; }
   .landing-security-banner { flex-direction: column; text-align: center; }
 }
