@@ -57,4 +57,4 @@ ScanFlow is designed to be highly scalable:
 
 ---
 
-*© 2026 ScanFlow. Powered by AI.*
+*© 2026 ScanFlow.*
