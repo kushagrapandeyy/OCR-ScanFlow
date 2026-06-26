@@ -53,7 +53,7 @@ export default function ProfilePage() {
   const handleLogout = () => {
     haptics.heavy()
     logout()
-    navigate('/login', { replace: true })
+    navigate('/', { replace: true })
   }
 
   return (

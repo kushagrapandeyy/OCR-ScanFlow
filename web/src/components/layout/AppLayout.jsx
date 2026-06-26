@@ -75,7 +75,7 @@ export default function AppLayout() {
 
   const handleLogout = () => {
     logout()
-    navigate('/login', { replace: true })
+    navigate('/', { replace: true })
   }
 
   const isSubRoute =
